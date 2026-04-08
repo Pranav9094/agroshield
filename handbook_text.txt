@@ -1,0 +1,912 @@
+AgroShield
+ AI-Powered Weed Detection for Precision Agriculture
+Round 2 Prototype
+7 Apr – 14 Apr 2025
+5 Members
+GPU Ready
+ Team Handbook — Full Project Guide, Git Workflow, Member Tasks & AI Prompts
+ CONFIDENTIAL — Distribute to all team members before Day 1 meeting
+
+Table of Contents
+1.
+Project Overview & Problem Statement
+ Pg 3
+2.
+Solution Architecture
+ Pg 4
+3.
+Tech Stack & Tools
+ Pg 5
+4.
+Git Workflow & Branch Strategy
+ Pg 6
+5.
+Team Roles & Responsibilities
+ Pg 8
+6.
+Day-by-Day Sprint Plan (7–14 Apr)
+ Pg 10
+7.
+Level System — MVP to WOW
+ Pg 13
+8.
+Member 1 — AI Model: All Prompts
+ Pg 14
+9.
+Member 2 — Frontend: All Prompts
+ Pg 17
+10.
+Member 3 — Backend: All Prompts
+ Pg 20
+11.
+Member 4 — PPT & Docs: All Prompts
+ Pg 23
+12.
+Member 5 — Team Lead: All Prompts
+ Pg 25
+13.
+Demo Script (Exact Words)
+ Pg 27
+14.
+Judge Q&A; Preparation
+ Pg 28
+15.
+Final Checklist Before Submission
+ Pg 30
+
+1. Project Overview & Problem Statement
+What is AgroShield?
+AgroShield is an AI-powered weed detection system built for precision agriculture. It uses a YOLOv8
+object detection model trained on real farm images to identify weeds in a field photo, draw bounding boxes
+around them, calculate spray zones, and give farmers targeted recommendations — instead of spraying
+chemicals blindly across the whole field.
+The Real Problem
+Problem
+Impact
+Farmers spray chemicals across the entire field
+80% of pesticide is wasted on weed-free areas
+No way to identify weed-dense zones from crop zones
+Higher cost, lower yield
+Manual scouting is time-consuming and error-prone
+Delays treatment, weeds spread further
+Chemical overuse harms soil health
+Long-term productivity loss
+Our Solution — In One Line
+AgroShield detects weeds using AI, shows where they are, and tells you exactly
+where to spray.
+Upload a field image → AI detects weeds → Bounding boxes drawn → Spray coordinates generated →
+Farmer saves chemicals, reduces cost, protects crops.
+Impact Statement (use this in PPT)
+ Reduce pesticide usage by 40–60% through targeted spraying
+ Save Rs 2,000–5,000 per acre per season in chemical costs
+ Scalable to drone integration and smart sprayer systems
+ Supports India's Digital Agriculture Mission and precision farming goals
+
+2. Solution Architecture
+System Flow
+Layer
+Component
+Technology
+Owner
+Input
+Farm image (upload/webcam)
+Browser / React
+M2
+Frontend
+Upload UI + Canvas render
+React + Vite + Canvas
+M2
+API
+Image receive + route
+FastAPI (Python)
+M3
+AI
+Weed detection model
+YOLOv8n (ultralytics)
+M1
+Output
+JSON response
+boxes, confidence, zones
+M3
+Display
+Annotated image + dashboard
+React Canvas + HTML
+M2
+Deploy
+Backend server
+uvicorn / localhost
+M3
+API Response Format (exact JSON)
+{
+  "weed_count": 7,
+  "crop_count": 12,
+  "detections": [
+    {
+      "label": "weed",
+      "confidence": 0.91,
+      "bbox": [120, 300, 85, 60],
+      "center": [162, 330]
+    }
+  ],
+  "spray_points": [[162, 330], [250, 410], [380, 275]],
+  "density_map": {
+    "zone_1": 0.85,
+    "zone_2": 0.12,
+    "zone_3": 0.67
+  },
+  "area_affected_pct": 38.5,
+  "high_risk_zones": 2
+}
+■ NOTE: Ye exact JSON format sab log follow karein. M2 (frontend) isi structure se bounding boxes draw
+karega aur dashboard values fill karega. M3 (backend) isi format mein response dega. Beech mein koi change
+karna ho toh pehle team se puch lo.
+
+3. Tech Stack & Tools — Install Commands
+M1 — AI Environment Setup
+Run these commands on the GPU laptop:
+# Step 1 — Python environment
+python -m venv agroshield_env
+source agroshield_env/bin/activate   # Windows: agroshield_env\Scripts\activate
+# Step 2 — Install YOLOv8
+pip install ultralytics opencv-python pillow
+# Step 3 — Verify GPU (CUDA)
+python -c "import torch; print(torch.cuda.is_available())"
+# Expected output: True
+# Step 4 — Download dataset (Roboflow WeedCrop)
+# Go to: https://roboflow.com → search "WeedCrop" → Download YOLOv8 format
+# OR use roboflow package:
+pip install roboflow
+# Then run the download script (see M1 prompts section)
+M2 — Frontend Setup
+# Step 1 — Create React project
+npm create vite@latest agroshield-frontend -- --template react
+cd agroshield-frontend
+npm install
+# Step 2 — Install dependencies
+npm install axios
+# Step 3 — Run dev server
+npm run dev
+# App runs at: http://localhost:5173
+M3 — Backend Setup
+# Step 1 — Create backend folder
+mkdir agroshield-backend && cd agroshield-backend
+python -m venv venv
+source venv/bin/activate
+# Step 2 — Install FastAPI
+pip install fastapi uvicorn python-multipart pillow ultralytics
+# Step 3 — Run server
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+# API runs at: http://localhost:8000
+# Docs at:    http://localhost:8000/docs
+
+4. Git Workflow & Branch Strategy
+Ye section sabse important hai. DBW project jaise hi karna hai. Master branch pe directly kuch mat karo.
+Pehle apni branch pe karo, phir pull request, phir merge.
+Repository Structure
+agroshield/
+■■■ agroshield-frontend/       # M2 ka React app
+■   ■■■ src/
+■   ■   ■■■ components/
+■   ■   ■   ■■■ Upload.jsx
+■   ■   ■   ■■■ ResultCanvas.jsx
+■   ■   ■   ■■■ Dashboard.jsx
+■   ■   ■■■ App.jsx
+■   ■   ■■■ main.jsx
+■   ■■■ package.json
+■
+■■■ agroshield-backend/        # M3 ka FastAPI server
+■   ■■■ main.py
+■   ■■■ detect.py
+■   ■■■ spray_zones.py
+■   ■■■ requirements.txt
+■
+■■■ agroshield-model/          # M1 ka AI model
+■   ■■■ train.py
+■   ■■■ inference.py
+■   ■■■ dataset.yaml
+■   ■■■ runs/                  # training outputs (gitignored)
+■
+■■■ .gitignore
+■■■ README.md
+Branch Strategy (DBW Style)
+Branch Name
+Who Uses It
+Purpose
+main
+M5 (Lead)
+Final, always-working code. Pull from here for demo.
+dev
+M5 (Lead)
+Integration branch. All features merge here first.
+feature/ai-model
+M1
+YOLO training, inference script, detect.py
+feature/frontend
+M2
+React UI, Canvas boxes, Dashboard
+feature/backend
+M3
+FastAPI endpoints, API logic, spray zones
+feature/ppt-docs
+M4
+Documentation, README updates, demo images
+Step-by-Step Git Commands (Har Member ke Liye)
+# ■■■ INITIAL SETUP (sirf ek baar — Day 1) ■■■■■■■■■■■■■■■■■■■■■■■■■■■
+# M5 repo create karo aur sab ko share karo GitHub link
+
+git clone https://github.com/YOUR_USERNAME/agroshield.git
+cd agroshield
+# Apni branch banao (replace XX with your branch name)
+git checkout -b feature/frontend       # M2
+git checkout -b feature/backend        # M3
+git checkout -b feature/ai-model       # M1
+git checkout -b feature/ppt-docs       # M4
+# ■■■ DAILY WORKFLOW (har din follow karo) ■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+# Step 1: Pehle latest dev pull karo
+git checkout dev
+git pull origin dev
+# Step 2: Apni branch pe wapas jao
+git checkout feature/frontend          # apni branch
+# Step 3: Dev ke changes apni branch mein lo
+git merge dev
+# Step 4: Apna kaam karo, phir commit karo
+git add .
+git commit -m "feat: add bounding box canvas component"
+# Step 5: Push karo
+git push origin feature/frontend
+# ■■■ PULL REQUEST / MERGE (jab feature complete ho) ■■■■■■■■■■■■■■■■■
+# GitHub pe jao → "Compare & Pull Request" → base: dev ← compare: feature/frontend
+# M5 review karega aur merge karega dev mein
+# Jab sab ready ho → M5 dev → main mein merge karega
+# ■■■ COMMIT MESSAGE FORMAT (follow karo strictly) ■■■■■■■■■■■■■■■■■■■■
+# feat: naya feature
+# fix:  bug fix
+# docs: documentation update
+# test: testing
+# Eg:
+git commit -m "feat: add weed density heatmap overlay"
+git commit -m "fix: confidence score NaN on empty detection"
+git commit -m "docs: update README with setup instructions"
+# ■■■ CONFLICT RESOLVE KARNA ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+git status                             # conflicts dekhna
+# Conflicted files edit karo manually → <<<< >>>> markers hata do
+git add .
+git commit -m "fix: resolve merge conflict in App.jsx"
+git push origin feature/frontend
+■ NOTE: GOLDEN RULE: Kabhi bhi 'git push origin main' mat karo directly. Hamesha apni feature branch
+push karo, phir M5 se merge karwao. Main branch sirf demo-ready code hona chahiye — har time.
+
+5. Team Roles & Responsibilities
+ M1
+AI / Model Engineer
+ Branch: feature/ai-model
+ Train YOLOv8n on WeedCrop dataset (GPU)
+ Write inference.py — image in, boxes out
+ Color-code output: red = weed, green = crop
+ Export best.pt model file
+ Test model on 20+ different farm images
+ Provide accuracy metrics for PPT
+Working folder: agroshield-model/
+ M2
+Frontend Engineer
+ Branch: feature/frontend
+ Build React upload component (drag & drop)
+ Canvas API: draw bounding boxes on image
+ Dashboard: weed count, confidence, area %
+ Show spray point markers (red circles)
+ Heatmap grid overlay (3x3 zone coloring)
+ Connect to M3 backend via axios
+Working folder: agroshield-frontend/src/
+ M3
+Backend / API Engineer
+ Branch: feature/backend
+ FastAPI POST /detect endpoint
+ Receive image, call M1 inference, return JSON
+ Compute spray_points from bounding box centers
+ Compute density_map for 9 grid zones
+ Return base64 annotated image + JSON
+ Handle CORS for React frontend
+Working folder: agroshield-backend/
+ M4
+PPT & Documentation
+ Branch: feature/ppt-docs
+ 8-slide presentation (template in section 11)
+ Architecture diagram (draw.io or PPT)
+ Demo screenshots after each Level complete
+ Update README.md with setup steps
+
+ Team script (who says what)
+ Prepare backup demo video (screen recording)
+Working folder: docs/
+ M5
+Team Lead / Integration
+ Branch: main + dev
+ Create GitHub repo, set up branches
+ Review and merge all PRs to dev, then main
+ End-to-end pipeline testing (all 7 days)
+ Maintain task checklist, keep team on schedule
+ Record backup demo video on Day 5
+ Final dry run x2 before presentation
+Working folder: Root level
+
+6. Day-by-Day Sprint Plan (7–14 April)
+Day 1
+7 Apr (Today) | SETUP & FREEZE — All Members Meet
+ M5
+Create GitHub repo, set up all 5 branches, share links with team
+Deliverable: GitHub repo live with all branches
+ M1
+Install ultralytics YOLOv8, verify GPU CUDA, download WeedCrop dataset from Roboflow
+Deliverable: yolo --version works + dataset folder ready
+ M2
+Create React+Vite project, push to feature/frontend. Basic layout: upload zone + result area
+Deliverable: App runs on localhost:5173
+ M3
+Create FastAPI project. Write /detect endpoint with dummy JSON response
+Deliverable: API returns JSON on Postman ping
+ M4
+Create PPT with 8 slides (titles only). Share Google Slides link with team
+Deliverable: PPT skeleton shared
+Day 2
+8 Apr | AI TRAINING + BACKEND WIRE
+ M1
+Start YOLOv8n training on GPU — 80 epochs. Write detect.py: loads best.pt, runs on image,
+returns boxes JSON
+Deliverable: Training running + detect.py works on 1 test image
+ M2
+Build image upload component with drag-drop. Show preview after upload. 'Detect Weeds'
+button added
+Deliverable: Upload + preview working
+ M3
+Wire FastAPI /detect to call detect.py. Accept multipart image → run inference → return real
+JSON
+Deliverable: API accepts real image, returns bounding boxes
+ M4
+Fill Problem Statement + Solution slides with real content. Add royalty-free farm photos
+Deliverable: 2 slides fully done
+ M5
+Test M3 API with Postman. Test M2 UI. Report issues to respective members
+Deliverable: Issue log written
+Day 3
+9 Apr | LEVEL 1 COMPLETE — MVP DONE
+ M1
+Check training mAP. If > 0.50 save best.pt and share with M3. If not, continue training overnight
+Deliverable: best.pt shared on WhatsApp / Google Drive
+ M2
+Draw bounding boxes on image using Canvas API. Red = weed, Green = crop. Show weed
+count + confidence below image
+Deliverable: Boxes visible on result image
+ M3
+Return base64 annotated image in JSON response. Full pipeline test: image upload →
+annotated image back
+Deliverable: End-to-end: image in → boxes out
+ M5
+Test full pipeline as a judge. Use 5 different real farm photos. Screenshot all results for PPT
+Deliverable: 5 proof screenshots ready
+
+M4
+Add AI Workflow slide + architecture diagram to PPT
+Deliverable: Architecture slide done
+Day 4
+10 Apr | LEVEL 2 — SPRAY ZONES + DASHBOARD
+ M3
+Cluster bounding box centers → compute spray_points. Add density_map for 9 grid zones.
+Return in JSON
+Deliverable: spray_points + density_map in API response
+ M2
+Show spray_points as red circle markers on image. Add dashboard panel: weed_count,
+high_risk_zones, area_affected_pct
+Deliverable: Dashboard visible with real numbers
+ M1
+Add color label in detect.py: return label='weed' or label='crop' per detection
+Deliverable: Color-coded JSON labels working
+ M4
+Add demo screenshots from Level 1. Write speaking script for each slide member
+Deliverable: Script document shared
+ M5
+Integration test: frontend + backend + model all together. No broken parts
+Deliverable: Zero errors on 3 test images
+Day 5
+11 Apr | LEVEL 3 — HEATMAP + WOW FACTOR
+ M2
+Add 3x3 field grid overlay on image. Color each zone green→red based on density_map score
+Deliverable: Heatmap visible over image
+ M3
+density_map: compute weed density score 0–100% per zone. Return in JSON
+Deliverable: 9-zone density data in response
+ M1
+Optional: add live webcam stream using OpenCV. If stable → demo. If not → skip safely
+Deliverable: Decision made by 6 PM
+ M5
+Record 2-minute screen-recorded demo video (backup). Save as MP4 on phone + laptop
+Deliverable: Backup video saved in 2 places
+ M4
+Add Future Scope slide: drone integration, smart sprayer, mobile app. Add impact stats
+Deliverable: Future scope slide done
+Day 6
+12 Apr | FREEZE + PPT FINAL + SCRIPT
+ M5
+Full pipeline test: 5 images, note all errors, assign fixes. NO new features after today
+Deliverable: Zero critical errors
+ M4
+Finalize all 8 slides. Add team photos, project name styling, AgroShield logo
+Deliverable: PPT final version saved
+ M5
+Write final speaking script. Assign lines to each member. Every member speaks.
+Deliverable: Script printed / shared
+ M5
+Push ALL code to GitHub. Clean up repo. Write README with screenshots + setup steps
+Deliverable: GitHub README done
+ M3
+Write requirements.txt. Test fresh install from scratch on a different laptop if possible
+Deliverable: Fresh install confirmed working
+
+Day 7
+13–14 Apr | DRY RUN + PRESENTATION DAY
+ M5
+Do 2 full dry runs — time them. Should be under 7 minutes total
+Deliverable: Smooth delivery, no panic
+ M5
+Pre-test 3 known farm images that detect correctly. Use ONLY these in live demo
+Deliverable: 3 safe demo images ready
+ M4
+Print one copy of judge Q&A; prep (Section 14). Every member reads it
+Deliverable: All members briefed
+ M5
+Keep backup demo video on 2 devices. If live demo fails → play video immediately
+Deliverable: Backup plan confirmed
+
+7. Level System — MVP to WOW
+LEVEL 1
+Must Have — MVP
+ Complete by: End of Day 3
+ Image upload (any farm photo)
+ YOLOv8 weed detection runs
+ Bounding boxes drawn on image (red = weed, green = crop)
+ Weed count shown
+ Confidence % shown
+If judges say 'show us your AI' — you can demo this instantly.
+LEVEL 2
+Strong Demo
+ Complete by: End of Day 4
+ Spray coordinate points on image (red circles)
+ Dashboard: weed count, high-risk zones, area %
+ Weed density score per zone
+ Color-coded crop vs weed differentiation
+This takes you above average teams. Most teams won't have this.
+LEVEL 3
+WOW Factor
+ Complete by: End of Day 5
+ 3x3 field heatmap grid overlay (green to red gradient)
+ Live webcam feed (if stable — skip if unstable)
+ Auto-spray simulation concept shown
+ Area affected % calculation
+This impresses judges and shows you thought beyond the basics.
+
+8. Member 1 — AI Model: All Prompts
+M1 ke saare kaam ke liye niche prompts hain. Har ek ko copy karo aur ChatGPT / Claude mein paste
+karo.
+M1 — Prompt 1: Dataset Download Script
+Write a Python script to download the WeedCrop dataset from Roboflow in YOLOv8 format.
+The dataset should be saved to ./datasets/weedcrop/ folder.
+Include error handling if the download fails.
+Print the number of images downloaded (train/valid/test split).
+Use the roboflow Python package.
+The workspace is 'weedcrop' and project name is 'weed-crop-detection'.
+Save as: agroshield-model/download_dataset.py
+M1 — Prompt 2: YOLOv8 Training Script
+Write a complete YOLOv8 training script using the ultralytics library.
+Requirements:
+- Model: YOLOv8n (nano — fastest for our GPU)
+- Dataset config: ./datasets/weedcrop/data.yaml
+- Epochs: 80
+- Image size: 640
+- Batch size: 16
+- Device: 0 (GPU)
+- Project name: agroshield_runs
+- Run name: weed_v1
+- Save best model to ./models/best.pt after training
+- Print final mAP50 and mAP50-95 scores
+Include a check: if CUDA not available, print warning and use CPU.
+Save as: agroshield-model/train.py
+M1 — Prompt 3: Inference / Detection Script
+Write a Python function called detect_weeds(image_path) using ultralytics YOLOv8.
+Requirements:
+- Load model from ./models/best.pt
+- Run inference on given image_path
+- Return a Python dict with this EXACT structure:
+{
+'weed_count': int,
+'crop_count': int,
+'detections': [
+{'label': 'weed' or 'crop', 'confidence': float, 'bbox': [x,y,w,h], 'center': [cx,cy]}
+],
+'spray_points': [[cx,cy], ...], # centers of weed detections only
+'annotated_image_path': str # path to saved annotated image
+}
+- Draw bounding boxes on image: RED for weed, GREEN for crop
+- Save annotated image to ./outputs/annotated.jpg
+- Handle case where no detections found (return empty lists)
+Also write a __main__ block to test with: python inference.py --image test.jpg
+Save as: agroshield-model/inference.py
+
+M1 — Prompt 4: Model Accuracy Report
+Write a Python script that evaluates my trained YOLOv8 model and prints a clean accuracy report.
+Requirements:
+- Load model from ./models/best.pt
+- Run validation on the dataset
+- Print: mAP50, mAP50-95, Precision, Recall per class (weed, crop)
+- Also print: total validation images, inference speed (ms per image)
+- Save results to ./outputs/accuracy_report.txt
+Format the output nicely with headers and separators.
+Also generate a confusion matrix and save it as ./outputs/confusion_matrix.png
+Save as: agroshield-model/evaluate.py
+M1 — Prompt 5: Webcam Live Feed (Optional)
+Write a Python script for live weed detection using laptop webcam.
+Requirements:
+- Use OpenCV to capture webcam feed
+- Run YOLOv8 inference on each frame (model: ./models/best.pt)
+- Draw bounding boxes in real-time: red=weed, green=crop
+- Show weed count as text overlay (top-left corner)
+- Show FPS counter
+- Press 'q' to quit
+- Press 's' to save current frame as screenshot
+Include a --no-webcam flag that uses a static image instead (for testing without camera).
+Save as: agroshield-model/live_detection.py
+
+9. Member 2 — Frontend: All Prompts
+M2 — Prompt 1: Upload Component
+Create a React component called ImageUpload.jsx.
+Requirements:
+- Drag & drop zone for image upload (also has a click-to-browse button)
+- Shows image preview after upload (using FileReader API)
+- Shows file name and file size below preview
+- Has a big green 'Detect Weeds' button that appears after image is selected
+- On button click, call props.onDetect(file) with the File object
+- Style with clean CSS — white background, green border dashed on drop zone
+- Show a loading spinner while detection is in progress (props.loading = true)
+- All styles as CSS modules or inline — no Tailwind required
+Use React hooks only (useState, useRef). No external libraries for drag-drop.
+Save as: agroshield-frontend/src/components/ImageUpload.jsx
+M2 — Prompt 2: Canvas Bounding Box Renderer
+Create a React component called ResultCanvas.jsx.
+Requirements:
+- Takes props: imageFile (File object) and detections (array of detection objects)
+- Each detection has: {label, confidence, bbox: [x,y,w,h], center: [cx,cy]}
+- Draws the original image on a Canvas element
+- Draws bounding boxes: RED (#FF3333) for label='weed', GREEN (#33CC33) for label='crop'
+- Each box has a label above it: 'Weed 91%' or 'Crop 87%'
+- Label background matches box color, text is white, font-size 12px
+- Also draws spray_points as red filled circles (radius 6px) with white border
+- Canvas scales to fit within 100% width of parent container (maintain aspect ratio)
+- Export function saveCanvas() that lets user download the annotated image
+The detections and spray_points come from the API response JSON (see data format below).
+API response format: {weed_count, crop_count, detections, spray_points, density_map,
+area_affected_pct}
+Save as: agroshield-frontend/src/components/ResultCanvas.jsx
+M2 — Prompt 3: Dashboard Stats Panel
+Create a React component called Dashboard.jsx.
+Requirements:
+- Takes props: result (the full API response JSON object)
+- Shows these stat cards in a 2x2 grid:
+1. Weed Count (large number, red color)
+2. Crop Count (large number, green color)
+3. Area Affected % (large %, orange color)
+4. High Risk Zones (number out of 9)
+- Below the grid: a table showing each detection's label + confidence %
+- Below that: a 'Spray Recommendations' section listing spray_points coordinates
+- Below that: a 3x3 grid showing density_map scores (color coded: 0-30% green, 31-70% yellow,
+71-100% red)
+- Clean minimal styling, white background, slight shadow on cards
+- If result is null, show placeholder dashes
+Save as: agroshield-frontend/src/components/Dashboard.jsx
+
+M2 — Prompt 4: Main App with API Integration
+Update App.jsx to be the main AgroShield application.
+Requirements:
+- Header: 'AgroShield' title with green color and a leaf emoji
+- Import and use: ImageUpload, ResultCanvas, Dashboard components
+- State: imageFile, detectionResult, isLoading, error
+- On detect button click:
+1. Create FormData with image file
+2. POST to http://localhost:8000/detect using axios
+3. Set isLoading=true while waiting
+4. On success: store response.data in detectionResult state
+5. On error: show error message in red below upload area
+- Layout: Upload section on top, then ResultCanvas + Dashboard side by side (if result exists)
+- Show ResultCanvas only after detection is complete
+- Add a 'Reset / Try Another Image' button that clears all state
+Clean layout, AgroShield green theme (#2D6A4F). No Tailwind required.
+Save as: agroshield-frontend/src/App.jsx
+
+10. Member 3 — Backend: All Prompts
+M3 — Prompt 1: FastAPI Main Server
+Create a complete FastAPI server in main.py for the AgroShield weed detection API.
+Requirements:
+- POST endpoint: /detect
+- Accepts: multipart/form-data with field 'file' (image)
+- Saves uploaded image to ./temp/input.jpg
+- Calls detect_weeds() function from detect.py (import it)
+- Returns JSON response with this EXACT structure:
+{
+"weed_count": int,
+"crop_count": int,
+"detections": [{label, confidence, bbox, center}],
+"spray_points": [[cx,cy]],
+"density_map": {"zone_1": float, ..., "zone_9": float},
+"area_affected_pct": float,
+"high_risk_zones": int,
+"annotated_image": "base64_string"
+}
+- GET endpoint: /health — returns {"status": "ok", "model": "YOLOv8n"}
+- Enable CORS for all origins (for React dev server on localhost:5173)
+- Create ./temp/ folder if it doesn't exist on startup
+- Error handling: if model not found, return HTTP 503 with helpful message
+Save as: agroshield-backend/main.py
+M3 — Prompt 2: Detection Bridge (detect.py)
+Create detect.py that bridges FastAPI and the YOLOv8 model.
+Requirements:
+- Function: detect_weeds(image_path: str) -> dict
+- Loads model from ../agroshield-model/models/best.pt
+- If model not found, raise FileNotFoundError with helpful message
+- Runs inference on image_path
+- Returns complete detection dict matching the API response format
+- Also converts annotated image to base64 string for JSON response
+- Function: compute_spray_zones(detections, image_width, image_height) -> dict
+- Divides image into 3x3 grid (9 zones)
+- For each zone, count weeds inside it
+- Return density_map: {'zone_1': 0.85, 'zone_2': 0.12, ...} (0.0 to 1.0 scale)
+- Return high_risk_zones: count of zones with density > 0.5
+- All paths should be configurable via environment variables
+Save as: agroshield-backend/detect.py
+
+M3 — Prompt 3: Requirements File + CORS Setup
+Create a complete requirements.txt for the AgroShield FastAPI backend.
+Include these packages with compatible versions:
+fastapi, uvicorn, python-multipart, pillow, ultralytics, torch, torchvision, opencv-python,
+numpy.
+Also write a startup script run.sh that:
+1. Activates virtual environment
+2. Runs uvicorn with --reload --host 0.0.0.0 --port 8000
+3. Prints the API docs URL when starting
+Also write a test_api.py script using the requests library that:
+- Tests /health endpoint
+- Tests /detect with a sample image (sample.jpg in same folder)
+- Prints all JSON fields from the response
+- Prints PASS or FAIL for each check
+Save as: agroshield-backend/requirements.txt + run.sh + test_api.py
+
+11. Member 4 — PPT & Docs: All Prompts
+PPT Slide Structure (8 Slides Exact)
+Slide
+Title
+Key Content
+Slide 1
+Title Slide
+AgroShield logo/name, tagline: 'AI-Powered Weed Detection for Precision Agriculture', team member names, date
+Slide 2
+Problem Statement
+4 pain points with icons, real statistics on pesticide waste, farmer cost impact. Use red/warning colors.
+Slide 3
+Our Solution
+AgroShield one-liner, 3-step flow diagram: Upload → Detect → Spray. Screenshot of working app.
+Slide 4
+How It Works — Architecture
+Tech stack diagram: React → FastAPI → YOLOv8. Data flow arrows. Clean and simple.
+Slide 5
+AI Model — YOLOv8
+What is YOLO, why we chose it, dataset info (WeedCrop), training results (mAP score), before/after image.
+Slide 6
+Live Demo
+Just say DEMO LIVE HERE. Add 2-3 screenshots of the working app: upload, detection, dashboard.
+Slide 7
+Impact & Innovation
+Pesticide reduction %, cost savings, precision agriculture alignment, scalability points.
+Slide 8
+Future Scope
+3 phases: Mobile App → Drone Integration → Smart Sprayer. Timeline graphic. End with strong closing line.
+M4 — Prompt 1: README Generator
+Write a complete README.md for the AgroShield GitHub repository.
+Include these sections:
+1. Project banner (just text-based ASCII art for 'AgroShield')
+2. One-line description
+3. Tech Stack (with icons using markdown emoji)
+4. Features list (Level 1, 2, 3)
+5. Setup Instructions:
+a. Clone repo
+b. Setup AI model (M1 folder)
+c. Setup backend (M3 folder)
+d. Setup frontend (M2 folder)
+e. Run everything together
+6. API documentation (/detect endpoint with request/response examples)
+7. Team Members table (5 rows, columns: Name, Role, Contribution)
+8. Screenshots section (placeholder for images)
+9. Future Scope
+10. License: MIT
+Use proper markdown formatting with headers, code blocks, and tables.
+Save as: README.md in root of repo
+
+12. Member 5 — Team Lead: All Prompts
+M5 — Prompt 1: GitHub Repo Initialization
+Give me the exact git commands to:
+1. Create a new GitHub repository called 'agroshield' (assume it's already created on GitHub)
+2. Clone it locally
+3. Create this folder structure:
+- agroshield-frontend/
+- agroshield-backend/
+- agroshield-model/
+- docs/
+- .gitignore (for Python + Node.js + model files)
+4. Create branches: dev, feature/ai-model, feature/frontend, feature/backend, feature/ppt-docs
+5. Push all branches to remote
+6. Set branch protection on main (describe the steps on GitHub web UI)
+Also write a .gitignore that excludes:
+- Python: __pycache__, *.pyc, venv/, *.egg-info
+- Node: node_modules/, dist/, .env
+- Model files: *.pt, runs/, datasets/ (too large for git)
+- Temp files: temp/, outputs/*.jpg
+Save as: .gitignore in root + run all git commands
+M5 — Prompt 2: Integration Test Script
+Write a Python script called integration_test.py that tests the complete AgroShield pipeline.
+Tests to run:
+1. Backend health check: GET http://localhost:8000/health → expect {"status": "ok"}
+2. Frontend reachability: GET http://localhost:5173 → expect 200 status
+3. Detection test: POST http://localhost:8000/detect with sample_farm.jpg
+→ expect response with weed_count, detections list, spray_points
+4. JSON schema validation: check all required fields exist in response
+5. Performance test: measure response time, print 'FAST' if < 3s, 'SLOW' if > 3s
+Print PASS / FAIL for each test in green/red (use colorama).
+At end: print overall score X/5 and list any failing tests.
+Save as: integration_test.py in root
+
+13. Demo Script — Exact Words to Say
+■ NOTE: Ye script print kar lo aur demo se pehle 2 baar practice karo. Time: max 7 minutes.
+M5 (Lead)
+OPENING (30 sec)
+"Good [morning/afternoon]. We are Team [Name] presenting AgroShield — an AI-powered weed
+detection system for precision agriculture."
+M4 (PPT)
+PROBLEM (45 sec)
+"Indian farmers spray pesticides across their entire field — but 60 to 80% of that chemical lands on
+perfectly healthy crops. This wastes thousands of rupees per season and harms soil quality. There is no
+affordable, real-time solution to identify exactly where weeds are."
+M1 (AI)
+AI MODEL (60 sec)
+"AgroShield uses YOLOv8 — a real-time object detection model — trained on a dataset of weed and
+crop images. The model learns the visual difference between weeds and crops, and can process a field
+image in under 2 seconds on standard hardware. We achieved a mean Average Precision of [your
+mAP]% on our validation set."
+M2 (FE)
+LIVE DEMO (2 min)
+"Let me show you the application. [Open browser] Here is the AgroShield dashboard. I will upload a real
+field image. [Upload image] Now I click Detect Weeds. [Click button] In about 2 seconds, the AI
+processes the image. [Show result] The red bounding boxes are detected weeds. Green boxes are
+healthy crops. The dashboard shows: [read numbers] weed count, area affected, and high-risk zones.
+The red circles show exactly WHERE the farmer should spray."
+M3 (BE)
+TECHNICAL (45 sec)
+"Behind the scenes: the image goes to our FastAPI backend, which calls the YOLOv8 model, gets
+bounding box coordinates, computes spray target points by clustering weed centers, and returns a
+structured JSON response to the frontend — all in real time."
+M5 (Lead)
+IMPACT + FUTURE (60 sec)
+"AgroShield can reduce pesticide usage by up to 40 to 60 percent through targeted spraying instead of
+blanket coverage. Our next phase integrates this with drone cameras for aerial field scanning, and
+eventually with autonomous sprayers that activate only when AI confirms a weed. Thank you. We are
+happy to take questions."
+
+14. Judge Q&A; Preparation
+ Q1
+What dataset did you use to train the model?
+We used the WeedCrop dataset available on Roboflow — it contains thousands of real field images with
+labelled bounding boxes for weeds and crops separately. This gave our model actual agricultural data
+rather than synthetic images.
+ Q2
+What is your model accuracy?
+Our model achieved [insert your mAP50 score] mean Average Precision on the validation set. For
+judges: the goal of this prototype is not 99% accuracy — it's demonstrating that AI-based targeted
+detection is feasible and scalable. Accuracy improves significantly with larger and more diverse
+datasets.
+ Q3
+How is this different from just spraying the whole field?
+Blanket spraying treats 100% of the field equally — wasting 60-80% of chemicals on weed-free areas.
+AgroShield detects only weed-dense zones and generates precise spray coordinates. Studies in
+precision agriculture show this reduces chemical use by 40-60%, directly cutting farmer costs.
+ Q4
+Can this work on a drone in real time?
+YOLOv8 was specifically designed for real-time inference — it runs at 30+ FPS on edge hardware like
+NVIDIA Jetson. Our current prototype is image-based, but the detection pipeline is identical to what a
+drone camera would use. Drone integration is our Phase 2 scope.
+ Q5
+What if weeds look similar to crops?
+This is exactly why we need a trained AI model instead of color filters. YOLOv8 learns texture, shape,
+and context from thousands of examples. We can further improve with more training data, including
+similar-looking species. Domain-specific datasets for Indian crops like wheat and rice exist on Roboflow.
+ Q6
+Why FastAPI and not Django or Flask?
+FastAPI is significantly faster than Flask for API workloads — it uses async under the hood. For image
+processing with ML models, response time matters. FastAPI also auto-generates OpenAPI
+documentation which made testing easier.
+ Q7
+What is the business model / who is the customer?
+
+Three customer segments: individual farmers (mobile app subscription), agri-tech companies
+integrating our API, and government agricultural programs deploying this at scale. India's PM-KISAN
+and Digital Agriculture Mission both create demand for exactly this type of precision farming solution.
+ Q8
+Is the code on GitHub?
+Yes — our repository is at github.com/[username]/agroshield. It includes the full source code, README
+with setup instructions, and model training results. All five team members contributed through separate
+feature branches with pull requests.
+
+15. Final Checklist Before Submission
+AI Model (M1)
+[ ]
+YOLOv8 training complete — best.pt saved
+[ ]
+detect.py returns correct JSON format
+[ ]
+Model tested on 10+ different farm images
+[ ]
+Accuracy metrics noted (mAP50 value ready to say)
+[ ]
+best.pt shared with M3 via Drive/USB
+Frontend (M2)
+[ ]
+Image upload with preview working
+[ ]
+Bounding boxes drawn correctly on canvas
+[ ]
+Weed = RED, Crop = GREEN confirmed
+[ ]
+Dashboard shows all 4 stats
+[ ]
+Spray points shown as red circles
+[ ]
+Heatmap grid overlay working (Level 3)
+[ ]
+No console errors in browser
+Backend (M3)
+[ ]
+POST /detect returns all JSON fields
+[ ]
+CORS enabled (React can call API without errors)
+[ ]
+spray_points computed from weed centers
+[ ]
+density_map has 9 zones
+[ ]
+requirements.txt up to date
+[ ]
+Server starts with single command
+PPT & Docs (M4)
+[ ]
+All 8 slides complete
+
+[ ]
+Architecture diagram on slide 4
+[ ]
+Demo screenshots on slide 6
+[ ]
+Speaking script distributed to all members
+[ ]
+README on GitHub with setup steps
+Team Lead (M5)
+[ ]
+All branches merged to main via PRs
+[ ]
+GitHub repo public and accessible
+[ ]
+Integration test passes (X/5)
+[ ]
+Backup demo video saved on 2 devices
+[ ]
+3 safe demo images pre-tested and ready
+[ ]
+2 full dry runs done — timed under 7 min
+[ ]
+Every member knows their lines
+[ ]
+Judge Q&A; section read by all members
+ Best of luck Team AgroShield. Tum log tayyar ho. Jao aur round 2 jeeto.
+ AgroShield — Precision Agriculture Through AI
