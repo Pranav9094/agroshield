@@ -1,0 +1,54 @@
+# ─────────────────────────────────────────────
+#  AgroShield .gitignore
+# ─────────────────────────────────────────────
+
+# ── Python ────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+venv/
+.venv/
+*.egg-info/
+*.egg
+.eggs/
+build/
+*.spec
+
+# ── Node.js ───────────────────────────────────
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.log
+
+# ── AI / ML Model Files ───────────────────────
+*.pt
+*.pth
+*.onnx
+*.h5
+*.pkl
+*.bin
+runs/
+datasets/
+data/
+checkpoints/
+
+# ── Temp / Output Files ───────────────────────
+temp/
+outputs/*.jpg
+outputs/*.png
+*.tmp
+
+# ── OS & IDE ──────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
