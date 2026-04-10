@@ -1,6 +1,6 @@
 """
 AgroShield — Dataset Downloader
-Downloads WeedCrop dataset from Roboflow in YOLOv8 format.
+Downloads crop-weed dataset from Roboflow in YOLOv8 format.
 """
 import os
 import sys
