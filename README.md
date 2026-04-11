@@ -266,7 +266,7 @@ curl -X POST "http://localhost:8000/detect" \
 
 | Name | Role | GitHub Branch | Key Contribution |
 |---|---|---|---|
-| **Pranav Patel** | Team Lead / Backend | `feature/backend-api` | FastAPI server, YOLOv8 integration, system architecture |
+| **Pranav** | Team Lead / Backend | `feature/backend-api` | FastAPI server, YOLOv8 integration, system architecture |
 | **Shrutika** | AI / ML Engineer | `feature/ai-model` | YOLOv8 training, WeedCrop dataset, model evaluation |
 | **Arjun** | Frontend Developer | `feature/frontend-ui` | React UI, image upload, bounding box overlay |
 | **Krishna** | Backend Developer | `feature/backend-db` | API endpoints, data pipeline, deployment |
