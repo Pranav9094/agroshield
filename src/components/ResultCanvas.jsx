@@ -1,7 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import HeatmapOverlay from "./HeatmapOverlay";
 
-const ResultCanvas = ({ imageFile, detections = [], spray_points = [] }) => {
+const ResultCanvas = ({ imageFile, detections = [], spray_points = [], density_map = {} }) => {
   const canvasRef = useRef(null);
+  const [showHeatmap, setShowHeatmap] = useState(false);
 
   useEffect(() => {
     if (!imageFile || !canvasRef.current) return;
@@ -97,11 +99,12 @@ const ResultCanvas = ({ imageFile, detections = [], spray_points = [] }) => {
       display: "inline-block", width: 12, height: 12,
       borderRadius: 2, background: color, marginRight: 5, verticalAlign: "middle",
     }),
-    btn: {
-      marginTop: 12, display: "inline-flex", alignItems: "center", gap: 6,
-      padding: "9px 20px", background: "#2D6A4F", color: "#fff",
-      border: "none", borderRadius: 7, fontSize: 13, fontWeight: 600, cursor: "pointer",
-    },
+    btnRow: { display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" },
+    btn: (bg) => ({
+      padding: "9px 20px", background: bg, color: "#fff",
+      border: "none", borderRadius: 7, fontSize: 13,
+      fontWeight: 600, cursor: "pointer",
+    }),
   };
 
   return (
@@ -112,6 +115,7 @@ const ResultCanvas = ({ imageFile, detections = [], spray_points = [] }) => {
         ) : (
           <div style={styles.empty}>Upload an image to see detection results</div>
         )}
+        <HeatmapOverlay density_map={density_map} visible={showHeatmap} />
       </div>
 
       {imageFile && (
@@ -136,9 +140,17 @@ const ResultCanvas = ({ imageFile, detections = [], spray_points = [] }) => {
             <span><span style={styles.dot("#33CC33")} />Crop</span>
           </div>
 
-          <button style={styles.btn} onClick={handleDownload}>
-            ↓ Download Annotated Image
-          </button>
+          <div style={styles.btnRow}>
+            <button style={styles.btn("#2D6A4F")} onClick={handleDownload}>
+              ↓ Download Annotated Image
+            </button>
+            <button
+              style={styles.btn(showHeatmap ? "#cc0000" : "#e65c00")}
+              onClick={() => setShowHeatmap(!showHeatmap)}
+            >
+              {showHeatmap ? "🔴 Hide Heatmap" : "🟠 Show Heatmap"}
+            </button>
+          </div>
         </>
       )}
     </div>
