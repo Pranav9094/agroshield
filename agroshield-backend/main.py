@@ -22,7 +22,7 @@ def health_check():
 
 @app.post("/detect")
 async def detect(file: UploadFile = File(...)):
-    if not file.filename.endswith(('.jpg', '.jpeg', '.png')):
+    if not file.filename.endswith(('.jpg', '.jpeg', '.png', '.webp')):
         raise HTTPException(status_code=400, detail="Invalid image format")
     
     input_path = "./temp/input.jpg"
