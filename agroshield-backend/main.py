@@ -1,6 +1,6 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-import os
+from pathlib import Path
 import shutil
 from detect import detect_weeds
 
@@ -14,25 +14,35 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-os.makedirs("./temp", exist_ok=True)
+TEMP_DIR = Path("temp")
+TEMP_DIR.mkdir(exist_ok=True)
+INPUT_PATH = TEMP_DIR / "input.jpg"
+
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 
 @app.get("/health")
-def health_check():
+async def health_check():
     return {"status": "ok", "model": "YOLOv8n"}
 
 @app.post("/detect")
 async def detect(file: UploadFile = File(...)):
-    if not file.filename.endswith(('.jpg', '.jpeg', '.png', '.webp')):
+    ext = Path(file.filename).suffix.lower()
+    if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(status_code=400, detail="Invalid image format")
-    
-    input_path = "./temp/input.jpg"
-    with open(input_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    
+
     try:
-        result = detect_weeds(input_path)
+        with INPUT_PATH.open("wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        result = detect_weeds(str(INPUT_PATH))
         return result
+
     except FileNotFoundError as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=503, detail=f"Model file missing: {e}")
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Internal error: {e}")
+
+    finally:
+        if INPUT_PATH.exists():
+            INPUT_PATH.unlink()
