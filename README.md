@@ -64,35 +64,116 @@ Upload Farm Image → AI Detects Weeds → Bounding Boxes → Spray Coordinates 
 
 ## 🚀 Quick Start
 
-### 1. Clone
-```bash
+### Prerequisites
+Make sure these are installed on your system:
+- [Python 3.10+](https://www.python.org/downloads/)
+- [Node.js 18+](https://nodejs.org/)
+- [Git](https://git-scm.com/)
+
+---
+
+### Step 1 — Clone Repository
+
+```powershell
 git clone https://github.com/Pranav9094/agroshield.git
 cd agroshield
 ```
 
-### 2. Backend
-```bash
+---
+
+### Step 2 — Backend Setup
+
+```powershell
+# Navigate to backend folder
 cd agroshield-backend
+
+# Create virtual environment
 python -m venv venv
+
+# Activate virtual environment
 venv\Scripts\activate
+
+# Install all dependencies
 pip install -r requirements.txt
+
+# Start backend server
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
-> API: `http://localhost:8000` | Docs: `http://localhost:8000/docs`
 
-### 3. Frontend
-```bash
-cd agroshield-frontend
-npm install
-npm run dev
-```
-> App: `http://localhost:5173`
+> ✅ API running at: `http://localhost:8000`
+> ✅ API Docs at: `http://localhost:8000/docs`
 
 ---
 
-## 📡 API
+### Step 3 — Frontend Setup
+
+Open a **new terminal** and run:
+
+```powershell
+# Navigate to frontend folder
+cd agroshield\agroshield-frontend
+
+# Install dependencies
+npm install
+
+# Start frontend
+npm run dev
+```
+
+> ✅ App running at: `http://localhost:5173`
+
+---
+
+### Step 4 — Open App
+
+Open browser and go to:
+```
+http://localhost:5173
+```
+
+Upload any farm image → Click **Detect Weeds** → See results! 🌿
+
+---
+
+## ⚠️ First Time Setup Notes
+
+> If you are running on a **new system**, the AI model (`best.pt`) must be present in:
+> ```
+> agroshield-backend/models/best.pt
+> ```
+> Download the trained model from [Releases](https://github.com/Pranav9094/agroshield/releases) or retrain using the steps below.
+
+### Retrain Model (Optional)
+
+```powershell
+# Navigate to model folder
+cd agroshield-model
+
+# Create virtual environment
+python -m venv agroshield_env
+agroshield_env\Scripts\activate
+
+# Install dependencies
+pip install ultralytics opencv-python pillow roboflow
+
+# Download dataset
+python download_dataset.py --api-key YOUR_ROBOFLOW_KEY
+
+# Train model
+python train.py
+```
+
+> ✅ Trained model saved at: `agroshield-model/models/best.pt`
+> Copy it to `agroshield-backend/models/best.pt` after training.
+
+---
+
+## 📡 API Documentation
 
 ### `POST /detect`
+**Request:** `multipart/form-data` — field: `file` (image)
+
+**Response:**
 ```json
 {
   "weed_count": 3,
@@ -136,7 +217,7 @@ npm run dev
 
 ## 👨‍💻 Built by
 
-| | |
+| Name | Role |
 |---|---|
 | **Pranav Chaudhari** | AI Model, Training, Architecture, Project Lead |
 | **Arjun Kawale** | Frontend, Backend, API Integration |

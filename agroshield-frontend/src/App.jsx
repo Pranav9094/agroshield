@@ -74,12 +74,12 @@ function App() {
           <section className="result-section" style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
             <div style={{ flex: 1, minWidth: 300 }}>
               <ResultCanvas
-              imageFile={imageFile}
-              detections={result.detections}
-              spray_points={result.spray_points}
-              density_map={result.density_map}
+                imageFile={imageFile}
+                detections={result.detections}
+                spray_points={result.spray_points}
+                density_map={result.density_map}
               />
-              
+
             </div>
             <div style={{ flex: 1, minWidth: 300 }}>
               <Dashboard result={result} />
@@ -99,7 +99,7 @@ function App() {
       </main>
 
       <footer className="footer">
-        <p>THE ELITES — Parul University — MIT-ADT AI Grand Challenge 2026</p>
+        <p>Precision Agriculture Through AI 🌿</p>
       </footer>
     </div>
   );
